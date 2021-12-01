@@ -3,29 +3,36 @@
 ECS.Components = {};
 
 ECS.Components.Transform = class Transform {
-    constructor() {
-        this.position = { x: 0, y: 0 };
-        this.rotation = 0;
-        this.scale = { x: 0, y: 0 };
+    constructor(posX=0, posY=0, scaleX=0, scaleY=0, rot=0) {
+        this.position = { x: posX, y: posY };
+        this.rotation = rot;
+        this.scale = { x: scaleX, y: scaleY };
     }
 }
 ECS.Components.Transform.prototype.name = 'transform';
 
 
 ECS.Components.Look = class Look {
-    constructor() {
-        this.type = "rect";
+    constructor(fR=0, fG=0, fB=0, sR=0, sG=0, sB=0, sWeight=0, dashedLineArray=[]) {
         // TODO: figure out where the dimension should live...
-        this.dimensions = { w: 0, h: 0 };
-        this.fill = { r: 0, g: 0, b: 0, a: 0 };
-        this.stroke = { r: 0, g: 0, b: 0, a: 0 };
-        this.strokeWeight = 0;
+        this.fill = { r: fR, g: fG, b: fB, a: 0 };
+        this.stroke = { r: sR, g: sG, b: sB, a: 0 };
+        this.strokeWeight = sWeight;
         // [ dashLength, gapLength ]
-        this.dashed = [];
+        this.dashed = dashedLineArray;
     }
 }
 ECS.Components.Look.prototype.name = 'look';
 
+ECS.Components.Shape = class Shape {
+    constructor(shapeType="rect", dW=0, dH=0, points=[]) {
+        this.type = shapeType;
+        // TODO: figure out where the dimension should live...
+        this.dimensions = { w: dW, h: dH };
+        this.points = points
+    }
+}
+ECS.Components.Shape.prototype.name = 'shape';
 
 ECS.Components.RenderSquare = class RenderSquare {
     constructor() {
