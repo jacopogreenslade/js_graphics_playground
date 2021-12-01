@@ -25,11 +25,12 @@ ECS.Components.Look = class Look {
 ECS.Components.Look.prototype.name = 'look';
 
 ECS.Components.Shape = class Shape {
-    constructor(shapeType="rect", dW=0, dH=0, points=[]) {
+    constructor(shapeType="rect", dW=0, dH=0, points=[], radius=0) {
         this.type = shapeType;
         // TODO: figure out where the dimension should live...
         this.dimensions = { w: dW, h: dH };
-        this.points = points
+        this.points = points;
+        this.radius = radius;
     }
 }
 ECS.Components.Shape.prototype.name = 'shape';
