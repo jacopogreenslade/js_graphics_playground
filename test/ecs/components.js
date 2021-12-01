@@ -12,8 +12,11 @@ ECS.Components.Transform = class Transform {
 ECS.Components.Transform.prototype.name = 'transform';
 
 
-ECS.Components.Renderer = class Renderer {
+ECS.Components.Look = class Look {
     constructor() {
+        this.type = "rect";
+        // TODO: figure out where the dimension should live...
+        this.dimensions = { w: 0, h: 0 };
         this.fill = { r: 0, g: 0, b: 0, a: 0 };
         this.stroke = { r: 0, g: 0, b: 0, a: 0 };
         this.strokeWeight = 0;
@@ -21,7 +24,7 @@ ECS.Components.Renderer = class Renderer {
         this.dashed = [];
     }
 }
-ECS.Components.Renderer.prototype.name = 'renderer';
+ECS.Components.Look.prototype.name = 'look';
 
 
 ECS.Components.RenderSquare = class RenderSquare {
