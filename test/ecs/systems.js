@@ -1,5 +1,19 @@
 ECS.Systems = {};
 
+ECS.Systems.MouseInteraction = function MouseInteraction(entities) {
+  entities
+    .filter((entity) => entity.components.interactive)
+    .forEach((entity) => {
+      // Check if mouse is over shape
+      if (entity.components.shape.pointInBounds(mouseX, mouseY)) {
+        entity.components.interactive;
+      }
+      // Check if mouse is being clicked
+
+      // Check if mouse is being released
+    });
+};
+
 ECS.Systems.Renderer = function Renderer(entities) {
   entities
     .filter((entity) => entity.components.look && entity.components.transform)

@@ -35,8 +35,16 @@ ECS.Components.Shape = class Shape {
 }
 ECS.Components.Shape.prototype.name = 'shape';
 
-ECS.Components.RenderSquare = class RenderSquare {
+/**
+ * Allows user to interact with entity
+ */
+ECS.Components.Interactible = class Interactible {
     constructor() {
-        this.mode
+        this.selected = false;
     }
+
+    hover() {}
+    click() {}
+    release() {}
 }
+ECS.Components.Interactible.prototype.name = 'interactible';
