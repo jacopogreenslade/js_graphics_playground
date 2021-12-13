@@ -78,6 +78,8 @@ function initRenderer() {
       [0, 0, 0, 1],
     ]);
 
+    // add comment
+
   // [1, cos(time)]
 }
 
@@ -216,5 +218,4 @@ function draw() {
   processedT = processTriangle(triangle2);
 
   drawTriangle(processedT);
-
 }
