@@ -44,6 +44,67 @@ class Vec {
 
 let doubleReverse = true;
 
+class Koch {
+  constructor(
+    initSegments,
+    maxGenerations,
+    colorFunction,
+    canvasWidth,
+    canvasHeight,
+    doubleReverse = false
+  ) {
+    this.doubleReverse = doubleReverse;
+
+    this.children = [...initSegments];
+    this.maxGenerations = maxGenerations;
+    this.colorFunction = colorFunction ? colorFunction : () => color(255);
+    this.currentGeneration = 0;
+
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
+  }
+
+  setChildren = (newChildren) => {
+    this.children = newChildren;
+  };
+
+  draw = () => {
+    this.children.forEach((s) => {
+      let c = this.colorFunction(s, this.canvasWidth, this.canvasHeight);
+      s.draw(c);
+    });
+  };
+
+  atMax = () => this.currentGeneration >= this.maxGenerations;
+
+  newGeneration = () => {
+    if (this.atMax()) {
+      return;
+    }
+    this.setChildren(this.children.map((c) => c.generate()).flat());
+    this.currentGeneration++;
+  };
+}
+
+const colorFunctionGradient = (segment, width, height) => {
+  // top right is mix, other corners are colors
+  
+  let averageV = new Vec(
+    (segment.start.x + segment.end.x) / 2,
+    (segment.start.y + segment.end.y) / 2
+  );
+
+  let xProp = averageV.x / width;
+  let yProp = averageV.y / height;
+  console.log(xProp, yProp);
+
+  let red = 255 - xProp*255;
+  let green = 255 - yProp*255;
+  let blue = ((xProp*255) + (yProp*255)) / 2
+
+  return color(red, green, blue);
+};
+
 class KochSegment {
   constructor(start, end) {
     this.start = start;
@@ -78,7 +139,10 @@ class KochSegment {
   }
 
   draw(color) {
-    stroke(color);
+    console.log(color);
+    if (color) {
+      stroke(color);
+    }
     line(this.start.x, this.start.y, this.end.x, this.end.y);
   }
 
@@ -89,17 +153,21 @@ class KochSegment {
   }
 }
 
-let children = [];
+// let children = [];
 let k;
+let kCurve;
 function setup() {
   createCanvas(500, 700);
-
-  strokeWeight(1);
+  strokeWeight(5);
   background(0);
 
+  // This is so we don't hit the edges
   let offsetX = 50;
   let offsetY = 150;
 
+  // These are just the initial segments to start with
+  // 
+  // A segment has 2 vectors: start, end
   k1 = new KochSegment(
     new Vec(400 + offsetX, offsetY),
     new Vec(offsetX, offsetY)
@@ -113,53 +181,22 @@ function setup() {
     new Vec(400 + offsetX, offsetY)
   );
 
-  k4 = new KochSegment(
-    new Vec(offsetX, offsetY),
-    new Vec(400 + offsetX, offsetY)
-  );
-  k5 = new KochSegment(
-    new Vec(200 + offsetX, 350 + offsetY),
-    new Vec(offsetX, offsetY)
-  );
-  k6 = new KochSegment(
-    new Vec(400 + offsetX, offsetY),
-    new Vec(200 + offsetX, 350 + offsetY)
-  );
+  // These are the same segments but with the points flipped. 
+  // When you flip it, the koch triangle will appear on the other side
+  k4 = k1.flip();
+  k5 = k2.flip();
+  k6 = k3.flip();
 
-  children = [k1, k2, k3, k4, k5, k6];
-
-  stroke(color(255, 0, 0));
-  stroke(color(200, 0, 255));
+  // Now initialize the kCurve with those segments
+  let initChildren = [k1, k2, k3, k4, k5, k6];
+  kCurve = new Koch(initChildren, 4, colorFunctionGradient, 500, 700, true);
 }
-
-function newGeneration() {
-  children = children.map((s) => s.generate()).flat();
-}
-
-function renderKoch() {
-  children.map((s, i) => {
-    let c  = (i / children.length) * 255;
-    // console.log(r);
-    s.draw(
-      color(
-        255 - c,
-        abs((255 / 2) - c),
-        c
-      )
-    );
-  });
-}
-
-// NOTE: Stopped it at 4 to prevent freezing
-let maxGeneration = 4;
-let current = 0;
 
 function mouseClicked() {
-  if (current >= maxGeneration) {
-    return;
-  }
+  // if (current >= maxGeneration) {
+  //   return;
+  // }
   background(0);
-  newGeneration();
-  renderKoch();
-  current++;
+  kCurve.newGeneration();
+  kCurve.draw();
 }
