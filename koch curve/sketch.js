@@ -55,6 +55,7 @@ class Koch {
   ) {
     this.doubleReverse = doubleReverse;
 
+    this.initSegments = initSegments;
     this.children = [...initSegments];
     this.maxGenerations = maxGenerations;
     this.colorFunction = colorFunction ? colorFunction : () => color(255);
@@ -63,6 +64,12 @@ class Koch {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
   }
+
+  reset = () => {
+    delete this.children;
+    this.children = [...this.initSegments];
+    this.currentGeneration = 0;
+  };
 
   setChildren = (newChildren) => {
     this.children = newChildren;
@@ -81,14 +88,16 @@ class Koch {
     if (this.atMax()) {
       return;
     }
+    let start = millis();
     this.setChildren(this.children.map((c) => c.generate()).flat());
     this.currentGeneration++;
+    console.log("Time", millis() - start, "Generation", this.currentGeneration);
   };
 }
 
 const colorFunctionGradient = (segment, width, height) => {
   // top right is mix, other corners are colors
-  
+
   let averageV = new Vec(
     (segment.start.x + segment.end.x) / 2,
     (segment.start.y + segment.end.y) / 2
@@ -96,11 +105,10 @@ const colorFunctionGradient = (segment, width, height) => {
 
   let xProp = averageV.x / width;
   let yProp = averageV.y / height;
-  console.log(xProp, yProp);
 
-  let red = 255 - xProp*255;
-  let green = 255 - yProp*255;
-  let blue = ((xProp*255) + (yProp*255)) / 2
+  let red = 255 - xProp * 255;
+  let green = 255 - yProp * 255;
+  let blue = (xProp * 255 + yProp * 255) / 2;
 
   return color(red, green, blue);
 };
@@ -139,7 +147,6 @@ class KochSegment {
   }
 
   draw(color) {
-    console.log(color);
     if (color) {
       stroke(color);
     }
@@ -156,46 +163,141 @@ class KochSegment {
 // let children = [];
 let k;
 let kCurve;
+
+function createInitialSegments(
+  shape = "TRIANGLE",
+  sideLength,
+  offsetX = 50,
+  offsetY = 150,
+  flip = false
+) {
+  // let offsetX = 50;
+  // let offsetY = 150;
+
+  let initChildren = [];
+
+  let tl, tr, bl, br;
+  switch (shape) {
+    case "TRIANGLE":
+      // These are just the initial segments to start with
+      //
+      // A segment has 2 vectors: start, end
+
+      // Start at top left
+      tl = new Vec(offsetX, offsetY);
+      tr = new Vec(offsetX + sideLength, offsetY);
+
+      let bc = tl.sum(tr.sub(tl).rotate(PI / 3));
+
+      k1 = new KochSegment(tl, tr);
+      k2 = new KochSegment(tr, bc);
+      k3 = new KochSegment(bc, tl);
+
+      initChildren = [k1, k2, k3];
+      break;
+    case "SQUARE":
+      // offsetX = 100;
+      // These are just the initial segments to start with
+      //
+      // A segment has 2 vectors: start, end
+      // let sideLength = 300;
+      tl = new Vec(offsetX, offsetY);
+      tr = new Vec(offsetX + sideLength, offsetY);
+      bl = new Vec(offsetX, offsetY + sideLength);
+      br = new Vec(offsetX + sideLength, offsetY + sideLength);
+
+      k1 = new KochSegment(tl, tr);
+      k2 = new KochSegment(tr, br);
+      k3 = new KochSegment(br, bl);
+      k4 = new KochSegment(bl, tl);
+
+      initChildren = [k1, k2, k3, k4];
+      break;
+    case "HEXAGON":
+      // Make a side then rotate it 6 times
+      tl = new Vec(offsetX, offsetY);
+      tr = new Vec(offsetX + sideLength, offsetY);
+      let sideV = tr.sub(tl);
+
+      let p3 = tr.sum(sideV.rotate(PI / 3));
+      let p4 = p3.sum(sideV.rotate((PI / 3) * 2));
+      let p5 = p4.sub(sideV);
+      let p6 = p5.sum(sideV.rotateCC((PI / 3) * 2));
+
+      k1 = new KochSegment(tl, tr);
+      k2 = new KochSegment(tr, p3);
+      k3 = new KochSegment(p3, p4);
+      k4 = new KochSegment(p4, p5);
+      k5 = new KochSegment(p5, p6);
+      k6 = new KochSegment(p6, tl);
+
+      initChildren = [k1, k2, k3, k4, k5, k6];
+      break;
+  }
+
+  // These are the same segments but with the points flipped.
+  // When you flip it, the koch triangle will appear on the other side
+  // let flipped = [];
+  if (flip) {
+    initChildren = initChildren.map((item) => item.flip());
+  }
+
+  // Now initialize the kCurve with those segments
+  return [...initChildren];
+}
+
 function setup() {
   createCanvas(500, 700);
-  strokeWeight(5);
+  strokeWeight(2);
   background(0);
 
   // This is so we don't hit the edges
-  let offsetX = 50;
-  let offsetY = 150;
+  // let initChildren = createInitialSegments(
+  //   "TRIANGLE",
+  //   (sideLength = 350),
+  //   (offsetX = 50),
+  //   (offsetY = 200),
+  //   (flip = false)
+  // );
 
-  // These are just the initial segments to start with
-  // 
-  // A segment has 2 vectors: start, end
-  k1 = new KochSegment(
-    new Vec(400 + offsetX, offsetY),
-    new Vec(offsetX, offsetY)
+  let initChildren = createInitialSegments(
+    "HEXAGON",
+    (sideLength = 200),
+    (offsetX = 150),
+    (offsetY = 100),
+    (flip = false)
   );
-  k2 = new KochSegment(
-    new Vec(offsetX, offsetY),
-    new Vec(200 + offsetX, 350 + offsetY)
-  );
-  k3 = new KochSegment(
-    new Vec(200 + offsetX, 350 + offsetY),
-    new Vec(400 + offsetX, offsetY)
-  );
+  initChildren = [
+    ...initChildren,
+    ...createInitialSegments(
+      "HEXAGON",
+      (sideLength = 180),
+      (offsetX = 160),
+      (offsetY = 115),
+      (flip = true)
+    ),
+    ...createInitialSegments(
+      "TRIANGLE",
+      (sideLength = 180),
+      (offsetX = 160),
+      (offsetY = 220),
+      (flip = true)
+    ),
+  ];
 
-  // These are the same segments but with the points flipped. 
-  // When you flip it, the koch triangle will appear on the other side
-  k4 = k1.flip();
-  k5 = k2.flip();
-  k6 = k3.flip();
-
-  // Now initialize the kCurve with those segments
-  let initChildren = [k1, k2, k3, k4, k5, k6];
+  // let initChildren = createInitialSegments("SQUARE", sideLength=350, offsetX=75, offsetY=125, flip=true);
+  // initChildren = [...initChildren, ...createInitialSegments("SQUARE", sideLength=250, offsetX=125, offsetY=175, flip=false)]
   kCurve = new Koch(initChildren, 4, colorFunctionGradient, 500, 700, true);
+
+  kCurve.draw();
 }
 
 function mouseClicked() {
-  // if (current >= maxGeneration) {
-  //   return;
-  // }
+  if (kCurve.atMax()) {
+    kCurve.reset();
+    background(0);
+    kCurve.draw();
+  }
   background(0);
   kCurve.newGeneration();
   kCurve.draw();
