@@ -95,13 +95,18 @@ class Koch {
   };
 }
 
+let theta = 0;
 const colorFunctionGradient = (segment, width, height) => {
+  
   // top right is mix, other corners are colors
 
   let averageV = new Vec(
     (segment.start.x + segment.end.x) / 2,
     (segment.start.y + segment.end.y) / 2
-  );
+  )
+    .sum(new Vec(-screenWidth/2, -screenHeight/2))
+    .rotate(radians(theta))
+    .sum(new Vec(screenWidth/2, screenHeight/2));
 
   let xProp = averageV.x / width;
   let yProp = averageV.y / height;
@@ -245,10 +250,11 @@ function createInitialSegments(
   // Now initialize the kCurve with those segments
   return [...initChildren];
 }
-
+let screenWidth = 500;
+let screenHeight = 700;
 function setup() {
-  createCanvas(500, 700);
-  strokeWeight(2);
+  createCanvas(screenWidth, screenHeight);
+  strokeWeight(3);
   background(0);
 
   // This is so we don't hit the edges
@@ -295,10 +301,20 @@ function setup() {
 function mouseClicked() {
   if (kCurve.atMax()) {
     kCurve.reset();
-    background(0);
-    kCurve.draw();
+    // background(0);
+    // kCurve.draw();
   }
-  background(0);
+  // background(0);
   kCurve.newGeneration();
+  // kCurve.draw();
+}
+
+function draw() {
+  theta += 5;
+  if (theta >=360) {
+    theta = 0;
+  }
+
+  background(0);
   kCurve.draw();
 }
